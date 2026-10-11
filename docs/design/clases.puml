@@ -1,0 +1,91 @@
+@startuml clases-prestamos
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classBackgroundColor #EEF2F8
+skinparam classBorderColor #1A3A5C
+skinparam nodesep 25
+skinparam ranksep 40
+title BiblioUNSA — Módulos Préstamos y Usuarios (diseño)
+
+class Estudiante {
+  - id: UUID
+  - cui: String
+  - nombres: String
+  - correo: String
+  - matriculaVigente: bool
+  + tieneMatriculaVigente(): bool
+  + crearReserva(ejemplar: Ejemplar): Prestamo
+}
+class Libro {
+  - isbn: String
+  - titulo: String
+  - autor: String
+  + buscarEjemplarDisponible(): Ejemplar
+}
+class Ejemplar {
+  - codigoBarras: String
+  - disponible: bool
+  + estaDisponible(): bool
+  + reservar(): void
+  + liberar(): void
+}
+class Prestamo {
+  - id: UUID
+  - fechaReserva: DateTime
+  - fechaLimite: Date
+  - fechaDevolucion: Date
+  - estado: EstadoPrestamo
+  + entregar(): void
+  + marcarVencido(): void
+  + registrarDevolucion(fecha: Date): void
+  + calcularMulta(fecha: Date): Decimal
+  + pagarMulta(): void
+  + cancelar(motivo: String): void
+}
+class Multa {
+  - monto: Decimal
+  - diasRetraso: int
+  - pagada: bool
+}
+enum EstadoPrestamo {
+  RESERVADO
+  PRESTADO
+  VENCIDO
+  CON_MULTA
+  DEVUELTO
+  CANCELADO
+}
+interface VerificadorMatricula <<puerto>> {
+  + consultarMatricula(cui: String): Estudiante
+}
+interface Notificador <<puerto>> {
+  + notificarReserva(p: Prestamo): void
+}
+interface RepositorioPrestamos <<puerto>> {
+  + buscar(id: UUID): Prestamo
+  + guardar(p: Prestamo): void
+}
+interface CatalogoLibros <<puerto>> {
+  + buscarPorIsbn(isbn: String): Libro
+}
+class MatriculaUnsaAdapter <<adaptador>>
+class CorreoAdapter <<adaptador>>
+class ServicioPrestamos <<servicio>> {
+  + reservarLibro(cui: String, isbn: String): Prestamo
+  + registrarDevolucion(prestamoId: UUID): Prestamo
+}
+
+Estudiante "1" -- "0..*" Prestamo : realiza >
+Prestamo "0..*" --> "1" Ejemplar : sobre >
+Libro "1" *-- "1..*" Ejemplar
+Prestamo "1" *-- "0..1" Multa
+Prestamo "1" --> "1" EstadoPrestamo
+VerificadorMatricula <|.. MatriculaUnsaAdapter
+Notificador <|.. CorreoAdapter
+ServicioPrestamos ..> VerificadorMatricula
+ServicioPrestamos ..> CatalogoLibros
+ServicioPrestamos ..> RepositorioPrestamos
+ServicioPrestamos ..> Notificador
+ServicioPrestamos ..> Prestamo
+@enduml
