@@ -1,0 +1,44 @@
+@startuml paquetes
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam packageBackgroundColor #EEF2F8
+skinparam packageBorderColor #1A3A5C
+title BiblioUNSA — Paquetes del monolito modular (ADR-001)
+
+package "Monolito modular Django" {
+  package "Autenticación" as AUT
+  package "Catálogo" as CAT
+  package "Reservas" as RES
+  package "Préstamos" as PRE
+  package "Multas" as MUL
+  package "Notificaciones" as NOT
+}
+
+package "Adaptadores externos" <<puertos y adaptadores>> {
+  package "Sistema académico" as ACA
+  package "Identidad" as IDE
+  package "Correo" as COR
+}
+
+RES ..> CAT : verifica ejemplar\ndisponible
+RES ..> AUT : identifica al estudiante
+RES ..> NOT : confirma la reserva
+PRE ..> RES : convierte la reserva\nen préstamo
+PRE ..> CAT : marca ejemplar\nprestado / libre
+PRE ..> AUT : identifica al estudiante
+MUL ..> PRE : consulta préstamos\nvencidos
+MUL ..> NOT : avisa la multa
+
+ACA ..> AUT : implementa puerto\nde matrícula
+IDE ..> AUT : implementa puerto\nde identidad
+COR ..> NOT : implementa puerto\nde correo
+
+note as N1
+  Regla (ADR-001): los módulos solo se comunican
+  mediante interfaces públicas (servicios de aplicación).
+  Sin dependencias cíclicas: Catálogo, Autenticación y
+  Notificaciones no dependen de ningún otro módulo, y
+  Préstamos no depende de Multas. Se verifica con import-linter.
+end note
+@enduml
