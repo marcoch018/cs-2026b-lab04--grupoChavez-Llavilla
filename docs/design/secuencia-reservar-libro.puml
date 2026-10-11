@@ -1,0 +1,49 @@
+@startuml secuencia-reservar-libro
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequenceMessageAlign center
+autonumber
+actor "Estudiante" as U
+participant "PWA" as UI
+participant "ReservaController" as C
+participant "ServicioPrestamos" as S
+participant "VerificadorMatricula\n(MatriculaUnsaAdapter)" as V
+participant "Estudiante\n(entidad)" as Est
+participant "CatalogoLibros" as CL
+participant "Libro" as L
+participant "Ejemplar" as E
+participant "RepositorioPrestamos" as R
+participant "Notificador" as N
+
+U -> UI : Reservar libro
+UI -> C : POST /reservas
+C -> S : reservarLibro(cui, isbn)
+S -> V : consultarMatricula(cui)
+V --> S : estudiante
+S -> Est : tieneMatriculaVigente()
+Est --> S : vigente
+alt matrícula vigente
+  S -> CL : buscarPorIsbn(isbn)
+  CL --> S : libro
+  S -> L : buscarEjemplarDisponible()
+  loop por cada ejemplar del libro
+    L -> E : estaDisponible()
+    E --> L : disponible
+  end
+  L --> S : ejemplar
+  S -> E : reservar()
+  S -> Est : crearReserva(ejemplar)
+  Est --> S : prestamo
+  S -> R : guardar(prestamo)
+  opt el estudiante tiene correo registrado
+    S ->> N : notificarReserva(prestamo)
+    note right of N : asíncrono\n(no bloquea la respuesta)
+  end
+  S --> C : prestamo RESERVADO
+  C --> UI : 201 Reserva creada
+else matrícula no vigente
+  S --> C : reserva rechazada
+  C --> UI : 403 Matrícula no vigente
+end
+UI --> U : Muestra el resultado
+@enduml
