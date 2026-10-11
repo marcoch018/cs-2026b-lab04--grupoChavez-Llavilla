@@ -1,0 +1,13 @@
+stateDiagram-v2
+    [*] --> RESERVADO : crearReserva()
+    RESERVADO --> PRESTADO : entregar() [recogido en 48 h]
+    RESERVADO --> CANCELADO : cancelar() [no recogido en 48 h]
+    PRESTADO --> DEVUELTO : registrarDevolucion() [sin retraso]
+    PRESTADO --> VENCIDO : marcarVencido() [fechaLimite superada]
+    VENCIDO --> CON_MULTA : registrarDevolucion() [diasRetraso > 0]
+    CON_MULTA --> DEVUELTO : pagarMulta() [multa pagada]
+    DEVUELTO --> [*]
+    CANCELADO --> [*]
+    note right of CON_MULTA
+        Al entrar: calcularMulta()
+    end note
