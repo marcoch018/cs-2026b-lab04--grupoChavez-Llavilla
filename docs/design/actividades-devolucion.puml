@@ -1,0 +1,40 @@
+@startuml actividades-devolucion
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ActivityBackgroundColor #EEF2F8
+skinparam ActivityBorderColor #1A3A5C
+|Estudiante|
+start
+:Entrega el libro en el mostrador;
+|Bibliotecario|
+:Escanea el código del ejemplar;
+|Sistema|
+:Registra la devolución;
+:Calcula los días de retraso;
+if (¿Hay retraso?) then (sí)
+  :Calcula la multa (días x tarifa);
+  :Registra la multa;
+  fork
+    :Notifica la multa por correo;
+  fork again
+    :Bloquea nuevas reservas hasta pagar;
+  end fork
+  |Estudiante|
+  :Paga la multa en caja;
+  |Bibliotecario|
+  :Confirma el pago;
+  |Sistema|
+  :Marca el préstamo como DEVUELTO;
+else (no)
+  :Marca el préstamo como DEVUELTO;
+endif
+|Bibliotecario|
+if (¿Ejemplar en buen estado?) then (sí)
+  :Devuelve el ejemplar al estante;
+  |Sistema|
+  :Libera el ejemplar;
+else (no)
+  :Envía el ejemplar a reparación;
+endif
+stop
+@enduml
