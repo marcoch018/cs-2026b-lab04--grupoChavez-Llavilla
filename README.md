@@ -1,5 +1,5 @@
 # BiblioUNSA — Laboratorio 04: Fundamentos de arquitectura de software
-Construcción de Software · EPIS-UNSA · 2026-B · Grupo XX
+Construcción de Software · EPIS-UNSA · 2026-B · Grupo Chavez-Llavilla
 
 ## Integrantes
 | Nombre | Rol en el laboratorio |
@@ -63,3 +63,35 @@ flowchart TB
 
 ## Reflexión sobre el uso de la IA
 La IA nos ayudó a generar y comparar alternativas rápidamente, a redactar borradores de ADR y a escribir el código de los diagramas, y su crítica de "abogado del diablo" nos hizo agregar mitigaciones concretas como el adaptador con reintentos y las pruebas de límites entre módulos. También cometió errores: asumió que el correo institucional ofrece inicio de sesión estándar (OIDC) sin que el caso lo diga, y fue necesario corregir la nota de la alternativa descartada para que citara los puntajes reales. Aprendimos a verificar cada afirmación contra los drivers (R-01 a R-06), a recalcular los totales con un script y a marcar como supuesto todo dato que la IA no pueda respaldar. Las decisiones finales las tomó el equipo y todo uso de la IA quedó registrado en la bitácora.
+
+## Diseño UML (Lab 05)
+
+Diseño detallado del módulo Préstamos de BiblioUNSA, con diagramas UML escritos como código (PlantUML y Mermaid).
+
+### Máquina de estados del Préstamo
+
+mermaid
+stateDiagram-v2
+    [*] --> RESERVADO : crearReserva()
+    RESERVADO --> PRESTADO : entregar() [recogido en 48 h]
+    RESERVADO --> CANCELADO : cancelar() [no recogido en 48 h]
+    PRESTADO --> DEVUELTO : registrarDevolucion() [sin retraso]
+    PRESTADO --> VENCIDO : marcarVencido() [fechaLimite superada]
+    VENCIDO --> CON_MULTA : registrarDevolucion() [diasRetraso > 0]
+    CON_MULTA --> DEVUELTO : pagarMulta() [multa pagada]
+    DEVUELTO --> [*]
+    CANCELADO --> [*]
+
+
+### Documentos y diagramas
+
+- [Historia de usuario](docs/design/historia.md)
+- [Diagrama de clases](docs/design/clases.puml)
+- [Diagrama de secuencia](docs/design/secuencia-reservar-libro.puml)
+- [Diagrama de estados](docs/design/estados-prestamo.mmd)
+- [Diagrama de actividades](docs/design/actividades-devolucion.puml)
+- [Diagrama de paquetes](docs/design/paquetes.puml)
+- [Código del dominio](src/prestamos/)
+- [Round-trip (pyreverse)](docs/design/round-trip.md)
+- [Consistencia C1–C5](docs/design/consistencia.md)
+- [Bitácora de IA](docs/design/bitacora-ia.md)
