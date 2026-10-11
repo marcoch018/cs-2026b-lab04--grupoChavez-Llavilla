@@ -1,0 +1,86 @@
+@startuml classes_prestamos
+set namespaceSeparator none
+class "CatalogoLibros" as prestamos.domino.CatalogoLibros {
+  {abstract}buscar_por_isbn(isbn: str) -> Libro
+}
+class "CorreoAdapter" as prestamos.domino.CorreoAdapter {
+  {abstract}notificar_reserva(p: Prestamo) -> None
+}
+class "Ejemplar" as prestamos.domino.Ejemplar {
+  codigo_barras : str
+  disponible : bool
+  esta_disponible() -> bool
+  liberar() -> None
+  reservar() -> None
+}
+class "EstadoPrestamo" as prestamos.domino.EstadoPrestamo {
+  name
+}
+class "Estudiante" as prestamos.domino.Estudiante {
+  correo : str
+  cui : str
+  id : UUID
+  matricula_vigente : bool
+  nombres : str
+  crear_reserva(ejemplar: Ejemplar) -> Prestamo
+  tiene_matricula_vigente() -> bool
+}
+class "Libro" as prestamos.domino.Libro {
+  autor : str
+  ejemplares : list[Ejemplar]
+  isbn : str
+  titulo : str
+  buscar_ejemplar_disponible() -> Ejemplar | None
+}
+class "MatriculaUnsaAdapter" as prestamos.domino.MatriculaUnsaAdapter {
+  {abstract}consultar_matricula(cui: str) -> Estudiante
+}
+class "Multa" as prestamos.domino.Multa {
+  dias_retraso : int
+  monto
+  pagada : bool
+}
+class "Notificador" as prestamos.domino.Notificador {
+  {abstract}notificar_reserva(p: Prestamo) -> None
+}
+class "Prestamo" as prestamos.domino.Prestamo {
+  ejemplar
+  estado
+  estudiante
+  fecha_devolucion : date | None
+  fecha_limite : date | None
+  fecha_reserva : datetime
+  id : UUID
+  multa : Multa | None
+  calcular_multa(fecha: date) -> Decimal
+  cancelar(motivo: str) -> None
+  entregar() -> None
+  marcar_vencido() -> None
+  pagar_multa() -> None
+  registrar_devolucion(fecha: date) -> None
+}
+class "RepositorioPrestamos" as prestamos.domino.RepositorioPrestamos {
+  {abstract}buscar(id: UUID) -> Prestamo
+  {abstract}guardar(p: Prestamo) -> None
+}
+class "ServicioPrestamos" as prestamos.domino.ServicioPrestamos {
+  catalogo
+  notificador
+  repositorio
+  verificador
+  registrar_devolucion(prestamo_id: UUID) -> Prestamo
+  reservar_libro(cui: str, isbn: str) -> Prestamo
+}
+class "VerificadorMatricula" as prestamos.domino.VerificadorMatricula {
+  {abstract}consultar_matricula(cui: str) -> Estudiante
+}
+prestamos.domino.CorreoAdapter --|> prestamos.domino.Notificador
+prestamos.domino.MatriculaUnsaAdapter --|> prestamos.domino.VerificadorMatricula
+prestamos.domino.Prestamo --> prestamos.domino.Ejemplar : ejemplar
+prestamos.domino.Prestamo --> prestamos.domino.EstadoPrestamo : estado
+prestamos.domino.Prestamo --> prestamos.domino.Estudiante : estudiante
+prestamos.domino.CatalogoLibros --o prestamos.domino.ServicioPrestamos : catalogo
+prestamos.domino.Notificador --o prestamos.domino.ServicioPrestamos : notificador
+prestamos.domino.RepositorioPrestamos --o prestamos.domino.ServicioPrestamos : repositorio
+prestamos.domino.VerificadorMatricula --o prestamos.domino.ServicioPrestamos : verificador
+@enduml
