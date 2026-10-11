@@ -1,0 +1,7 @@
+@startuml packages_prestamos
+set namespaceSeparator none
+package "prestamos" as prestamos {
+}
+package "prestamos.domino" as prestamos.domino {
+}
+@enduml
