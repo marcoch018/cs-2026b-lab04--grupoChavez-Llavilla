@@ -1,0 +1,20 @@
+@startuml contexto-manual
+!include <C4/C4_Context>
+skinparam dpi 180
+LAYOUT_LEFT_RIGHT()
+title Contexto de BiblioUNSA (C4-PlantUML escrito a mano)
+
+Person(estudiante, "Estudiante", "Busca libros, los reserva y consulta sus multas")
+Person(bibliotecario, "Bibliotecario", "Registra préstamos y devoluciones con carné QR")
+System(biblio, "BiblioUNSA", "Catálogo, reservas, préstamos y multas de las bibliotecas de la UNSA")
+System_Ext(academico, "Sistema Académico UNSA", "Informa la matrícula vigente")
+System_Ext(identidad, "Proveedor de identidad institucional", "Correo institucional (OIDC)")
+System_Ext(correo, "Servicio de correo", "Entrega de avisos")
+
+Rel(estudiante, biblio, "Consulta el catálogo, reserva libros y revisa sus multas")
+Rel(bibliotecario, biblio, "Registra préstamos y devoluciones y gestiona el inventario")
+Rel(biblio, academico, "Consulta la matrícula vigente", "HTTPS/JSON (API)")
+Rel(biblio, identidad, "Delega el inicio de sesión", "HTTPS/OIDC")
+Rel(biblio, correo, "Envía avisos por correo", "SMTP")
+SHOW_LEGEND()
+@enduml
