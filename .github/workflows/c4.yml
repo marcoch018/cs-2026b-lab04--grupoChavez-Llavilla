@@ -1,0 +1,43 @@
+name: Validar modelo C4
+
+on:
+  push:
+    paths:
+      - "docs/architecture/c4/workspace.dsl"
+      - ".github/workflows/c4.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  c4:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs/architecture/c4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Instalar Structurizr CLI
+        run: |
+          curl -sL -o /tmp/cli.zip https://github.com/structurizr/cli/releases/latest/download/structurizr-cli.zip
+          unzip -q /tmp/cli.zip -d /tmp/structurizr
+      - name: Validar el modelo (el push falla si hay errores)
+        run: /tmp/structurizr/structurizr.sh validate -w workspace.dsl
+      - name: Exportar vistas
+        run: |
+          rm -rf export
+          /tmp/structurizr/structurizr.sh export -w workspace.dsl -f plantuml/c4plantuml -o export
+          /tmp/structurizr/structurizr.sh export -w workspace.dsl -f mermaid -o export
+      - name: Generar PNG
+        run: |
+          curl -sL -o /tmp/plantuml.jar https://github.com/plantuml/plantuml/releases/download/v1.2024.7/plantuml-1.2024.7.jar
+          java -jar /tmp/plantuml.jar -tpng -o ../img export/*.puml
+      - name: Commit de las imágenes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: regenerar vistas C4"
+          file_pattern: "docs/architecture/c4/export docs/architecture/c4/img"
