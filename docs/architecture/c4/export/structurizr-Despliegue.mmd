@@ -1,0 +1,47 @@
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["Deployment View: BiblioUNSA - Producción"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    subgraph 62 ["Celular o PC del usuario"]
+      style 62 fill:#ffffff,stroke:#444444,color:#444444
+
+      63["<div style='font-weight: bold'>Aplicación web (PWA)</div><div style='font-size: 70%; margin-top: 0px'>[Container: HTML, JavaScript y Service Worker]</div><div style='font-size: 80%; margin-top:10px'>Interfaz para estudiantes y<br />bibliotecarios desde celular<br />o PC.</div>"]
+      style 63 fill:#438dd5,stroke:#2e6295,color:#ffffff
+    end
+
+    subgraph 64 ["VPS en la nube"]
+      style 64 fill:#ffffff,stroke:#444444,color:#444444
+
+      65["<div style='font-weight: bold'>Nginx</div><div style='font-size: 70%; margin-top: 0px'>[Infrastructure Node: Nginx]</div><div style='font-size: 80%; margin-top:10px'>Proxy inverso con HTTPS</div>"]
+      style 65 fill:#ffffff,stroke:#444444,color:#444444
+      subgraph 66 ["Monolito modular"]
+        style 66 fill:#ffffff,stroke:#444444,color:#444444
+
+        67["<div style='font-weight: bold'>API BiblioUNSA</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python / Django]</div><div style='font-size: 80%; margin-top:10px'>Monolito modular que<br />implementa los casos de uso<br />mediante una API REST<br />(ADR-001).</div>"]
+        style 67 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        69["<div style='font-weight: bold'>Worker de tareas</div><div style='font-size: 70%; margin-top: 0px'>[Container: Celery]</div><div style='font-size: 80%; margin-top:10px'>Ejecuta avisos, reintentos de<br />validación de matrícula<br />(ADR-003) y tareas<br />programadas de vencimientos y<br />multas.</div>"]
+        style 69 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      end
+
+      subgraph 70 ["Datos"]
+        style 70 fill:#ffffff,stroke:#444444,color:#444444
+
+        71[("<div style='font-weight: bold'>Base de datos</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL]</div><div style='font-size: 80%; margin-top:10px'>Usuarios, libros, ejemplares,<br />reservas, préstamos y multas<br />(un esquema por módulo).</div>")]
+        style 71 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        74["<div style='font-weight: bold'>Cola y caché</div><div style='font-size: 70%; margin-top: 0px'>[Container: Redis]</div><div style='font-size: 80%; margin-top:10px'>Cola de tareas y caché corta<br />de la matrícula (ADR-003).</div>"]
+        style 74 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      end
+
+    end
+
+    63-. "<div>Llama a</div><div style='font-size: 70%'>[HTTPS/JSON (REST)]</div>" .->67
+    67-. "<div>Lee y escribe</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->71
+    69-. "<div>Lee préstamos vencidos y<br />registra multas</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->71
+    67-. "<div>Encola tareas y lee la caché</div><div style='font-size: 70%'>[Redis protocol]</div>" .->74
+    69-. "<div>Consume tareas</div><div style='font-size: 70%'>[Redis protocol]</div>" .->74
+    63-. "<div>Llama a</div><div style='font-size: 70%'>[HTTPS]</div>" .->65
+    65-. "<div>Reenvía las peticiones</div><div style='font-size: 70%'>[HTTP]</div>" .->67
+
+  end

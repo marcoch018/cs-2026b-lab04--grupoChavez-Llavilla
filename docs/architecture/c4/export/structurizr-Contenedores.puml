@@ -1,0 +1,46 @@
+@startuml
+title <size:24>Container View: BiblioUNSA</size>\n<size:24>Nivel 2: contenedores de BiblioUNSA.</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(Estudiante, "Estudiante", $descr="Busca libros, los reserva y consulta sus préstamos y multas.", $tags="", $link="")
+Person(Bibliotecario, "Bibliotecario", $descr="Registra préstamos y devoluciones con el carné QR y gestiona el inventario.", $tags="", $link="")
+System(SistemaAcadémicoUNSA, "Sistema Académico UNSA", $descr="Informa si el estudiante tiene matrícula vigente.", $tags="", $link="")
+System(Proveedordeidentidadinstitucional, "Proveedor de identidad institucional", $descr="Autentica con el correo institucional de la UNSA.", $tags="", $link="")
+System(Serviciodecorreo, "Servicio de correo", $descr="Entrega los correos electrónicos a los usuarios.", $tags="", $link="")
+
+System_Boundary("BiblioUNSA_boundary", "BiblioUNSA", $tags="") {
+  Container(BiblioUNSA.Workerdetareas, "Worker de tareas", $techn="Celery", $descr="Ejecuta avisos, reintentos de validación de matrícula (ADR-003) y tareas programadas de vencimientos y multas.", $tags="", $link="")
+  ContainerDb(BiblioUNSA.Basededatos, "Base de datos", $techn="PostgreSQL", $descr="Usuarios, libros, ejemplares, reservas, préstamos y multas (un esquema por módulo).", $tags="", $link="")
+  ContainerQueue(BiblioUNSA.Colaycaché, "Cola y caché", $techn="Redis", $descr="Cola de tareas y caché corta de la matrícula (ADR-003).", $tags="", $link="")
+  Container(BiblioUNSA.AplicaciónwebPWA, "Aplicación web (PWA)", $techn="HTML, JavaScript y Service Worker", $descr="Interfaz para estudiantes y bibliotecarios desde celular o PC.", $tags="", $link="")
+  Container(BiblioUNSA.APIBiblioUNSA, "API BiblioUNSA", $techn="Python / Django", $descr="Monolito modular que implementa los casos de uso mediante una API REST (ADR-001).", $tags="", $link="")
+}
+
+Rel(Estudiante, BiblioUNSA.AplicaciónwebPWA, "Usa", $techn="HTTPS", $tags="", $link="")
+Rel(Bibliotecario, BiblioUNSA.AplicaciónwebPWA, "Usa", $techn="HTTPS", $tags="", $link="")
+Rel(BiblioUNSA.AplicaciónwebPWA, BiblioUNSA.APIBiblioUNSA, "Llama a", $techn="HTTPS/JSON (REST)", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA, BiblioUNSA.Basededatos, "Lee y escribe", $techn="SQL/TCP", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA, BiblioUNSA.Colaycaché, "Encola tareas y lee la caché", $techn="Redis protocol", $tags="", $link="")
+Rel(BiblioUNSA.Workerdetareas, BiblioUNSA.Colaycaché, "Consume tareas", $techn="Redis protocol", $tags="", $link="")
+Rel(BiblioUNSA.Workerdetareas, BiblioUNSA.Basededatos, "Lee préstamos vencidos y registra multas", $techn="SQL/TCP", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA, SistemaAcadémicoUNSA, "Consulta la matrícula vigente", $techn="HTTPS/JSON (API)", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA, Proveedordeidentidadinstitucional, "Delega el inicio de sesión", $techn="HTTPS/OIDC", $tags="", $link="")
+Rel(BiblioUNSA.Workerdetareas, SistemaAcadémicoUNSA, "Reintenta validaciones pendientes", $techn="HTTPS/JSON (API)", $tags="", $link="")
+Rel(BiblioUNSA.Workerdetareas, Serviciodecorreo, "Envía avisos por correo", $techn="SMTP", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

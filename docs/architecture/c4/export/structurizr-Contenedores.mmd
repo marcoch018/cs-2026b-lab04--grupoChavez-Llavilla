@@ -1,0 +1,45 @@
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["Container View: BiblioUNSA"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    1["<div style='font-weight: bold'>Estudiante</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Busca libros, los reserva y<br />consulta sus préstamos y<br />multas.</div>"]
+    style 1 fill:#08427b,stroke:#052e56,color:#ffffff
+    2["<div style='font-weight: bold'>Bibliotecario</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Registra préstamos y<br />devoluciones con el carné QR<br />y gestiona el inventario.</div>"]
+    style 2 fill:#08427b,stroke:#052e56,color:#ffffff
+    18["<div style='font-weight: bold'>Sistema Académico UNSA</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Informa si el estudiante<br />tiene matrícula vigente.</div>"]
+    style 18 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    19["<div style='font-weight: bold'>Proveedor de identidad institucional</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Autentica con el correo<br />institucional de la UNSA.</div>"]
+    style 19 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    20["<div style='font-weight: bold'>Servicio de correo</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Entrega los correos<br />electrónicos a los usuarios.</div>"]
+    style 20 fill:#999999,stroke:#6b6b6b,color:#ffffff
+
+    subgraph 3 ["BiblioUNSA"]
+      style 3 fill:#ffffff,stroke:#0b4884,color:#0b4884
+
+      15["<div style='font-weight: bold'>Worker de tareas</div><div style='font-size: 70%; margin-top: 0px'>[Container: Celery]</div><div style='font-size: 80%; margin-top:10px'>Ejecuta avisos, reintentos de<br />validación de matrícula<br />(ADR-003) y tareas<br />programadas de vencimientos y<br />multas.</div>"]
+      style 15 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      16[("<div style='font-weight: bold'>Base de datos</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL]</div><div style='font-size: 80%; margin-top:10px'>Usuarios, libros, ejemplares,<br />reservas, préstamos y multas<br />(un esquema por módulo).</div>")]
+      style 16 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      17["<div style='font-weight: bold'>Cola y caché</div><div style='font-size: 70%; margin-top: 0px'>[Container: Redis]</div><div style='font-size: 80%; margin-top:10px'>Cola de tareas y caché corta<br />de la matrícula (ADR-003).</div>"]
+      style 17 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      4["<div style='font-weight: bold'>Aplicación web (PWA)</div><div style='font-size: 70%; margin-top: 0px'>[Container: HTML, JavaScript y Service Worker]</div><div style='font-size: 80%; margin-top:10px'>Interfaz para estudiantes y<br />bibliotecarios desde celular<br />o PC.</div>"]
+      style 4 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      5["<div style='font-weight: bold'>API BiblioUNSA</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python / Django]</div><div style='font-size: 80%; margin-top:10px'>Monolito modular que<br />implementa los casos de uso<br />mediante una API REST<br />(ADR-001).</div>"]
+      style 5 fill:#438dd5,stroke:#2e6295,color:#ffffff
+    end
+
+    1-. "<div>Usa</div><div style='font-size: 70%'>[HTTPS]</div>" .->4
+    2-. "<div>Usa</div><div style='font-size: 70%'>[HTTPS]</div>" .->4
+    4-. "<div>Llama a</div><div style='font-size: 70%'>[HTTPS/JSON (REST)]</div>" .->5
+    5-. "<div>Lee y escribe</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->16
+    5-. "<div>Encola tareas y lee la caché</div><div style='font-size: 70%'>[Redis protocol]</div>" .->17
+    15-. "<div>Consume tareas</div><div style='font-size: 70%'>[Redis protocol]</div>" .->17
+    15-. "<div>Lee préstamos vencidos y<br />registra multas</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->16
+    5-. "<div>Consulta la matrícula vigente</div><div style='font-size: 70%'>[HTTPS/JSON (API)]</div>" .->18
+    5-. "<div>Delega el inicio de sesión</div><div style='font-size: 70%'>[HTTPS/OIDC]</div>" .->19
+    15-. "<div>Reintenta validaciones<br />pendientes</div><div style='font-size: 70%'>[HTTPS/JSON (API)]</div>" .->18
+    15-. "<div>Envía avisos por correo</div><div style='font-size: 70%'>[SMTP]</div>" .->20
+
+  end

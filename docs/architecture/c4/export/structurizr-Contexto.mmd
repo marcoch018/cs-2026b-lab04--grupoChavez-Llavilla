@@ -1,0 +1,26 @@
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["System Context View: BiblioUNSA"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    1["<div style='font-weight: bold'>Estudiante</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Busca libros, los reserva y<br />consulta sus préstamos y<br />multas.</div>"]
+    style 1 fill:#08427b,stroke:#052e56,color:#ffffff
+    18["<div style='font-weight: bold'>Sistema Académico UNSA</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Informa si el estudiante<br />tiene matrícula vigente.</div>"]
+    style 18 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    19["<div style='font-weight: bold'>Proveedor de identidad institucional</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Autentica con el correo<br />institucional de la UNSA.</div>"]
+    style 19 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    2["<div style='font-weight: bold'>Bibliotecario</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Registra préstamos y<br />devoluciones con el carné QR<br />y gestiona el inventario.</div>"]
+    style 2 fill:#08427b,stroke:#052e56,color:#ffffff
+    20["<div style='font-weight: bold'>Servicio de correo</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Entrega los correos<br />electrónicos a los usuarios.</div>"]
+    style 20 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    3["<div style='font-weight: bold'>BiblioUNSA</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Permite consultar el<br />catálogo, reservar libros,<br />prestarlos con carné QR y<br />controlar multas.</div>"]
+    style 3 fill:#1168bd,stroke:#0b4884,color:#ffffff
+
+    1-. "<div>Consulta el catálogo, reserva<br />libros y revisa sus multas</div><div style='font-size: 70%'></div>" .->3
+    2-. "<div>Registra préstamos y<br />devoluciones y gestiona el<br />inventario</div><div style='font-size: 70%'></div>" .->3
+    3-. "<div>Consulta la matrícula vigente</div><div style='font-size: 70%'>[HTTPS/JSON (API)]</div>" .->18
+    3-. "<div>Delega el inicio de sesión</div><div style='font-size: 70%'>[HTTPS/OIDC]</div>" .->19
+    3-. "<div>Envía avisos por correo</div><div style='font-size: 70%'>[SMTP]</div>" .->20
+
+  end
