@@ -1,0 +1,60 @@
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["Dynamic View: BiblioUNSA - API BiblioUNSA"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    1["<div style='font-weight: bold'>Estudiante</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Busca libros, los reserva y<br />consulta sus préstamos y<br />multas.</div>"]
+    style 1 fill:#08427b,stroke:#052e56,color:#ffffff
+
+    18["<div style='font-weight: bold'>Sistema Académico UNSA</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Informa si el estudiante<br />tiene matrícula vigente.</div>"]
+    style 18 fill:#999999,stroke:#6b6b6b,color:#ffffff
+
+    subgraph 3 ["BiblioUNSA"]
+      style 3 fill:#ffffff,stroke:#0b4884,color:#0b4884
+
+      subgraph 5 ["API BiblioUNSA"]
+        style 5 fill:#ffffff,stroke:#2e6295,color:#2e6295
+
+        11["<div style='font-weight: bold'>Módulo Notificaciones</div><div style='font-size: 70%; margin-top: 0px'>[Component: Django app]</div><div style='font-size: 80%; margin-top:10px'>Genera avisos de reserva,<br />vencimiento y multa.</div>"]
+        style 11 fill:#85bbf0,stroke:#5d82a8,color:#000000
+        12["<div style='font-weight: bold'>Adaptador Sistema académico</div><div style='font-size: 70%; margin-top: 0px'>[Component: Adaptador (puertos y adaptadores)]</div><div style='font-size: 80%; margin-top:10px'>Implementa el puerto de<br />matrícula consultando la API<br />académica.</div>"]
+        style 12 fill:#85bbf0,stroke:#5d82a8,color:#000000
+        6["<div style='font-weight: bold'>Módulo Autenticación</div><div style='font-size: 70%; margin-top: 0px'>[Component: Django app]</div><div style='font-size: 80%; margin-top:10px'>Identifica a la persona y<br />valida su matrícula mediante<br />puertos.</div>"]
+        style 6 fill:#85bbf0,stroke:#5d82a8,color:#000000
+        7["<div style='font-weight: bold'>Módulo Catálogo</div><div style='font-size: 70%; margin-top: 0px'>[Component: Django app]</div><div style='font-size: 80%; margin-top:10px'>Libros, ejemplares y<br />disponibilidad.</div>"]
+        style 7 fill:#85bbf0,stroke:#5d82a8,color:#000000
+        8["<div style='font-weight: bold'>Módulo Reservas</div><div style='font-size: 70%; margin-top: 0px'>[Component: Django app]</div><div style='font-size: 80%; margin-top:10px'>Crea reservas de ejemplares<br />disponibles para estudiantes<br />con matrícula vigente.</div>"]
+        style 8 fill:#85bbf0,stroke:#5d82a8,color:#000000
+      end
+
+      16[("<div style='font-weight: bold'>Base de datos</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL]</div><div style='font-size: 80%; margin-top:10px'>Usuarios, libros, ejemplares,<br />reservas, préstamos y multas<br />(un esquema por módulo).</div>")]
+      style 16 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      17["<div style='font-weight: bold'>Cola y caché</div><div style='font-size: 70%; margin-top: 0px'>[Container: Redis]</div><div style='font-size: 80%; margin-top:10px'>Cola de tareas y caché corta<br />de la matrícula (ADR-003).</div>"]
+      style 17 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      4["<div style='font-weight: bold'>Aplicación web (PWA)</div><div style='font-size: 70%; margin-top: 0px'>[Container: HTML, JavaScript y Service Worker]</div><div style='font-size: 80%; margin-top:10px'>Interfaz para estudiantes y<br />bibliotecarios desde celular<br />o PC.</div>"]
+      style 4 fill:#438dd5,stroke:#2e6295,color:#ffffff
+    end
+
+    1["<div style='font-weight: bold'>Estudiante</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Busca libros, los reserva y<br />consulta sus préstamos y<br />multas.</div>"]
+    style 1 fill:#08427b,stroke:#052e56,color:#ffffff
+    4["<div style='font-weight: bold'>Aplicación web (PWA)</div><div style='font-size: 70%; margin-top: 0px'>[Container: HTML, JavaScript y Service Worker]</div><div style='font-size: 80%; margin-top:10px'>Interfaz para estudiantes y<br />bibliotecarios desde celular<br />o PC.</div>"]
+    style 4 fill:#438dd5,stroke:#2e6295,color:#ffffff
+    16[("<div style='font-weight: bold'>Base de datos</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL]</div><div style='font-size: 80%; margin-top:10px'>Usuarios, libros, ejemplares,<br />reservas, préstamos y multas<br />(un esquema por módulo).</div>")]
+    style 16 fill:#438dd5,stroke:#2e6295,color:#ffffff
+    17["<div style='font-weight: bold'>Cola y caché</div><div style='font-size: 70%; margin-top: 0px'>[Container: Redis]</div><div style='font-size: 80%; margin-top:10px'>Cola de tareas y caché corta<br />de la matrícula (ADR-003).</div>"]
+    style 17 fill:#438dd5,stroke:#2e6295,color:#ffffff
+    18["<div style='font-weight: bold'>Sistema Académico UNSA</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Informa si el estudiante<br />tiene matrícula vigente.</div>"]
+    style 18 fill:#999999,stroke:#6b6b6b,color:#ffffff
+
+    1-. "<div>1. Pulsa «Reservar libro»</div><div style='font-size: 70%'>[HTTPS]</div>" .->4
+    4-. "<div>2. POST /reservas</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->8
+    8-. "<div>3. Identifica al estudiante</div><div style='font-size: 70%'></div>" .->6
+    6-. "<div>4. Consulta la matrícula<br />(puerto)</div><div style='font-size: 70%'></div>" .->12
+    12-. "<div>5. Consulta la matrícula<br />vigente</div><div style='font-size: 70%'>[HTTPS/JSON (API)]</div>" .->18
+    8-. "<div>6. Verifica ejemplar<br />disponible</div><div style='font-size: 70%'></div>" .->7
+    8-. "<div>7. Guarda la reserva</div><div style='font-size: 70%'>[SQL]</div>" .->16
+    8-. "<div>8. Confirma la reserva<br />(asíncrono)</div><div style='font-size: 70%'></div>" .->11
+    11-. "<div>9. Encola el aviso</div><div style='font-size: 70%'>[Redis protocol]</div>" .->17
+
+  end

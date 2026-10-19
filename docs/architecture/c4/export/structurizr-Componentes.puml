@@ -1,0 +1,69 @@
+@startuml
+title <size:24>Component View: BiblioUNSA - API BiblioUNSA</size>\n<size:24>Nivel 3: módulos de la API.</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System(SistemaAcadémicoUNSA, "Sistema Académico UNSA", $descr="Informa si el estudiante tiene matrícula vigente.", $tags="", $link="")
+System(Proveedordeidentidadinstitucional, "Proveedor de identidad institucional", $descr="Autentica con el correo institucional de la UNSA.", $tags="", $link="")
+System(Serviciodecorreo, "Servicio de correo", $descr="Entrega los correos electrónicos a los usuarios.", $tags="", $link="")
+
+System_Boundary("BiblioUNSA_boundary", "BiblioUNSA", $tags="") {
+  Container_Boundary("BiblioUNSA.APIBiblioUNSA_boundary", "API BiblioUNSA", $tags="") {
+    Component(BiblioUNSA.APIBiblioUNSA.MóduloMultas, "Módulo Multas", $techn="Django app", $descr="Calcula y controla multas por retraso.", $tags="", $link="")
+    Component(BiblioUNSA.APIBiblioUNSA.MóduloNotificaciones, "Módulo Notificaciones", $techn="Django app", $descr="Genera avisos de reserva, vencimiento y multa.", $tags="", $link="")
+    Component(BiblioUNSA.APIBiblioUNSA.AdaptadorSistemaacadémico, "Adaptador Sistema académico", $techn="Adaptador (puertos y adaptadores)", $descr="Implementa el puerto de matrícula consultando la API académica.", $tags="", $link="")
+    Component(BiblioUNSA.APIBiblioUNSA.AdaptadorIdentidad, "Adaptador Identidad", $techn="Adaptador (puertos y adaptadores)", $descr="Implementa el puerto de identidad con el correo institucional.", $tags="", $link="")
+    Component(BiblioUNSA.APIBiblioUNSA.AdaptadorCorreo, "Adaptador Correo", $techn="Adaptador (puertos y adaptadores)", $descr="Implementa el puerto de correo electrónico.", $tags="", $link="")
+    Component(BiblioUNSA.APIBiblioUNSA.MóduloAutenticación, "Módulo Autenticación", $techn="Django app", $descr="Identifica a la persona y valida su matrícula mediante puertos.", $tags="", $link="")
+    Component(BiblioUNSA.APIBiblioUNSA.MóduloCatálogo, "Módulo Catálogo", $techn="Django app", $descr="Libros, ejemplares y disponibilidad.", $tags="", $link="")
+    Component(BiblioUNSA.APIBiblioUNSA.MóduloReservas, "Módulo Reservas", $techn="Django app", $descr="Crea reservas de ejemplares disponibles para estudiantes con matrícula vigente.", $tags="", $link="")
+    Component(BiblioUNSA.APIBiblioUNSA.MóduloPréstamos, "Módulo Préstamos", $techn="Django app", $descr="Convierte reservas en préstamos y registra devoluciones.", $tags="", $link="")
+  }
+
+  ContainerDb(BiblioUNSA.Basededatos, "Base de datos", $techn="PostgreSQL", $descr="Usuarios, libros, ejemplares, reservas, préstamos y multas (un esquema por módulo).", $tags="", $link="")
+  ContainerQueue(BiblioUNSA.Colaycaché, "Cola y caché", $techn="Redis", $descr="Cola de tareas y caché corta de la matrícula (ADR-003).", $tags="", $link="")
+  Container(BiblioUNSA.AplicaciónwebPWA, "Aplicación web (PWA)", $techn="HTML, JavaScript y Service Worker", $descr="Interfaz para estudiantes y bibliotecarios desde celular o PC.", $tags="", $link="")
+}
+
+Rel(BiblioUNSA.AplicaciónwebPWA, BiblioUNSA.APIBiblioUNSA.MóduloAutenticación, "Inicia sesión", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(BiblioUNSA.AplicaciónwebPWA, BiblioUNSA.APIBiblioUNSA.MóduloCatálogo, "Consulta libros", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(BiblioUNSA.AplicaciónwebPWA, BiblioUNSA.APIBiblioUNSA.MóduloReservas, "Reserva libros", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(BiblioUNSA.AplicaciónwebPWA, BiblioUNSA.APIBiblioUNSA.MóduloPréstamos, "Registra préstamos y devoluciones", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(BiblioUNSA.AplicaciónwebPWA, BiblioUNSA.APIBiblioUNSA.MóduloMultas, "Consulta multas", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloReservas, BiblioUNSA.APIBiblioUNSA.MóduloAutenticación, "Identifica al estudiante", $techn="", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloReservas, BiblioUNSA.APIBiblioUNSA.MóduloCatálogo, "Verifica ejemplar disponible", $techn="", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloReservas, BiblioUNSA.APIBiblioUNSA.MóduloNotificaciones, "Confirma la reserva", $techn="", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloPréstamos, BiblioUNSA.APIBiblioUNSA.MóduloReservas, "Convierte la reserva en préstamo", $techn="", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloPréstamos, BiblioUNSA.APIBiblioUNSA.MóduloCatálogo, "Marca ejemplar prestado o libre", $techn="", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloPréstamos, BiblioUNSA.APIBiblioUNSA.MóduloAutenticación, "Identifica al estudiante", $techn="", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloMultas, BiblioUNSA.APIBiblioUNSA.MóduloPréstamos, "Consulta préstamos vencidos", $techn="", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloMultas, BiblioUNSA.APIBiblioUNSA.MóduloNotificaciones, "Avisa la multa", $techn="", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloAutenticación, BiblioUNSA.APIBiblioUNSA.AdaptadorSistemaacadémico, "Consulta la matrícula (puerto)", $techn="", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloAutenticación, BiblioUNSA.APIBiblioUNSA.AdaptadorIdentidad, "Delega la identidad (puerto)", $techn="", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloNotificaciones, BiblioUNSA.APIBiblioUNSA.AdaptadorCorreo, "Envía el correo (puerto)", $techn="", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.AdaptadorSistemaacadémico, SistemaAcadémicoUNSA, "Consulta la matrícula vigente", $techn="HTTPS/JSON (API)", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.AdaptadorIdentidad, Proveedordeidentidadinstitucional, "Autentica con el correo institucional", $techn="HTTPS/OIDC", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.AdaptadorCorreo, Serviciodecorreo, "Entrega el correo", $techn="SMTP", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloNotificaciones, BiblioUNSA.Colaycaché, "Encola avisos", $techn="Redis protocol", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloAutenticación, BiblioUNSA.Basededatos, "Lee y escribe usuarios", $techn="SQL", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloCatálogo, BiblioUNSA.Basededatos, "Lee y escribe libros y ejemplares", $techn="SQL", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloReservas, BiblioUNSA.Basededatos, "Guarda la reserva", $techn="SQL", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloPréstamos, BiblioUNSA.Basededatos, "Lee y escribe préstamos", $techn="SQL", $tags="", $link="")
+Rel(BiblioUNSA.APIBiblioUNSA.MóduloMultas, BiblioUNSA.Basededatos, "Lee y escribe multas", $techn="SQL", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

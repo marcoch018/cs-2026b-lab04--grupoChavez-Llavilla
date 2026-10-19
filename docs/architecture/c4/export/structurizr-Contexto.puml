@@ -1,0 +1,32 @@
+@startuml
+title <size:24>System Context View: BiblioUNSA</size>\n<size:24>Nivel 1: BiblioUNSA y su entorno.</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+Person(Estudiante, "Estudiante", $descr="Busca libros, los reserva y consulta sus préstamos y multas.", $tags="", $link="")
+System(SistemaAcadémicoUNSA, "Sistema Académico UNSA", $descr="Informa si el estudiante tiene matrícula vigente.", $tags="", $link="")
+System(Proveedordeidentidadinstitucional, "Proveedor de identidad institucional", $descr="Autentica con el correo institucional de la UNSA.", $tags="", $link="")
+Person(Bibliotecario, "Bibliotecario", $descr="Registra préstamos y devoluciones con el carné QR y gestiona el inventario.", $tags="", $link="")
+System(Serviciodecorreo, "Servicio de correo", $descr="Entrega los correos electrónicos a los usuarios.", $tags="", $link="")
+System(BiblioUNSA, "BiblioUNSA", $descr="Permite consultar el catálogo, reservar libros, prestarlos con carné QR y controlar multas.", $tags="", $link="")
+
+Rel(Estudiante, BiblioUNSA, "Consulta el catálogo, reserva libros y revisa sus multas", $techn="", $tags="", $link="")
+Rel(Bibliotecario, BiblioUNSA, "Registra préstamos y devoluciones y gestiona el inventario", $techn="", $tags="", $link="")
+Rel(BiblioUNSA, SistemaAcadémicoUNSA, "Consulta la matrícula vigente", $techn="HTTPS/JSON (API)", $tags="", $link="")
+Rel(BiblioUNSA, Proveedordeidentidadinstitucional, "Delega el inicio de sesión", $techn="HTTPS/OIDC", $tags="", $link="")
+Rel(BiblioUNSA, Serviciodecorreo, "Envía avisos por correo", $techn="SMTP", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml
