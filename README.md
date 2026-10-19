@@ -95,3 +95,48 @@ stateDiagram-v2
 - [Round-trip (pyreverse)](docs/design/round-trip.md)
 - [Consistencia C1–C5](docs/design/consistencia.md)
 - [Bitácora de IA](docs/design/bitacora-ia.md)
+
+## Arquitectura C4 (Lab 06)
+
+Modelo único en [`workspace.dsl`](docs/architecture/c4/workspace.dsl); todas las vistas se exportan de ahí con Structurizr CLI.
+
+**Nivel 1 — Contexto (exportado a Mermaid):**
+
+```mermaid
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["System Context View: BiblioUNSA"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    1["<div style='font-weight: bold'>Estudiante</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Busca libros, los reserva y<br />consulta sus préstamos y<br />multas.</div>"]
+    style 1 fill:#08427b,stroke:#052e56,color:#ffffff
+    18["<div style='font-weight: bold'>Sistema Académico UNSA</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Informa si el estudiante<br />tiene matrícula vigente.</div>"]
+    style 18 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    19["<div style='font-weight: bold'>Proveedor de identidad institucional</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Autentica con el correo<br />institucional de la UNSA.</div>"]
+    style 19 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    2["<div style='font-weight: bold'>Bibliotecario</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Registra préstamos y<br />devoluciones con el carné QR<br />y gestiona el inventario.</div>"]
+    style 2 fill:#08427b,stroke:#052e56,color:#ffffff
+    20["<div style='font-weight: bold'>Servicio de correo</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Entrega los correos<br />electrónicos a los usuarios.</div>"]
+    style 20 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    3["<div style='font-weight: bold'>BiblioUNSA</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Permite consultar el<br />catálogo, reservar libros,<br />prestarlos con carné QR y<br />controlar multas.</div>"]
+    style 3 fill:#1168bd,stroke:#0b4884,color:#ffffff
+
+    1-. "<div>Consulta el catálogo, reserva<br />libros y revisa sus multas</div><div style='font-size: 70%'></div>" .->3
+    2-. "<div>Registra préstamos y<br />devoluciones y gestiona el<br />inventario</div><div style='font-size: 70%'></div>" .->3
+    3-. "<div>Consulta la matrícula vigente</div><div style='font-size: 70%'>[HTTPS/JSON (API)]</div>" .->18
+    3-. "<div>Delega el inicio de sesión</div><div style='font-size: 70%'>[HTTPS/OIDC]</div>" .->19
+    3-. "<div>Envía avisos por correo</div><div style='font-size: 70%'>[SMTP]</div>" .->20
+
+  end
+```
+
+| Vista | Imagen |
+|---|---|
+| Nivel 1 — Contexto | [structurizr-Contexto.png](docs/architecture/c4/img/structurizr-Contexto.png) |
+| Nivel 2 — Contenedores | [structurizr-Contenedores.png](docs/architecture/c4/img/structurizr-Contenedores.png) |
+| Nivel 3 — Componentes | [structurizr-Componentes.png](docs/architecture/c4/img/structurizr-Componentes.png) |
+| Dinámica — Reservar libro | [structurizr-ReservarLibro.png](docs/architecture/c4/img/structurizr-ReservarLibro.png) |
+| Despliegue — Producción | [structurizr-Despliegue.png](docs/architecture/c4/img/structurizr-Despliegue.png) |
+
+Documentos: [inventario](docs/architecture/c4/inventario.md) · [comparación](docs/architecture/c4/comparacion.md) · [revisión con la lista oficial](docs/architecture/c4/revision-c4.md) · [explicación no técnica](docs/architecture/c4/explicacion.md) · [bitácora de IA](docs/architecture/c4/bitacora-ia.md) · [cuestionario](docs/architecture/c4/cuestionario.md). Etiqueta de entrega: `v0.6-c4`.
